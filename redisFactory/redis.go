@@ -1,4 +1,4 @@
-package redisFactory
+package redisfactory
 
 import (
 	"log"
@@ -13,12 +13,12 @@ type RedisConnection struct {
 	IdleTimeout int    
 }
 
-func newRedisConnection() (conn RedisConnection, err error) {
+func NewRedisConnection() (conn *RedisConnection, err error) {
 	redisURL, err := url.Parse(os.Getenv("LIMITER_REDIS_URL"))
 	if err != nil {
 		return
 	}
-	conn = RedisConnection{}
+	conn = &RedisConnection{}
 	conn.Host = redisURL.Host
 	conn.Auth = ""
 	if redisURL.User != nil {
@@ -29,7 +29,7 @@ func newRedisConnection() (conn RedisConnection, err error) {
 	return
 }
 
-func newRedisClient(config RedisConnection) (client *redis.Client, err error) {
+func (config *RedisConnection) NewRedisClient() (client *redis.Client, err error) {
 	client = redis.NewClient(&redis.Options{
 		Addr:     config.Host,
 		Password: config.Auth,
@@ -37,7 +37,7 @@ func newRedisClient(config RedisConnection) (client *redis.Client, err error) {
 	})
 
 	if _, err = client.Ping().Result(); err != nil {
-		log.Println("fail to initialize redis client: ", err)
+		log.Println("failed to initialize redis client: ", err)
 		client = nil
 		return
 	}
