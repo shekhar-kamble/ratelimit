@@ -44,7 +44,7 @@ func runLimiterHash(client *redis.Client) (err error) {
 	return nil
 }
 
-func New(limit int64, duration int64, key string) (limiter *Limiter, err error) {
+func New(limit int64, duration int64) (limiter *Limiter, err error) {
 	rConn, err := redisfactory.NewRedisConnection()
 	if err != nil {
 		return nil, errors.New("please set LIMITER_REDIS_URL to point to a valid url")
@@ -54,7 +54,7 @@ func New(limit int64, duration int64, key string) (limiter *Limiter, err error) 
 		return nil, errors.New("Cannot Connect to Redis Client")
 	}
 
-	limiter = newLimiter(rClient, limit, duration, key)
+	limiter = newLimiter(rClient, limit, duration)
 	go func() {
 		timer := time.NewTicker(5 * time.Second)
 		for {
@@ -71,19 +71,17 @@ type Limiter struct {
 	redisClient *redis.Client
 	limit 		int64
 	duration 	int64
-	key 		string
 }
 
-func newLimiter(redisClient *redis.Client, limit int64, duration int64, key string) *Limiter {
+func newLimiter(redisClient *redis.Client, limit int64, duration int64) *Limiter {
 	return &Limiter{
 		redisClient: redisClient,
 		limit: limit,
 		duration: duration,
-		key:   key,
 	}
 }
 
-func (lim *Limiter) Allow() bool {
+func (lim *Limiter) Allow(key string) bool {
 	if lim.redisClient == nil {
 		log.Println("Cannot Connect to Redis Client")
 		return true
@@ -91,7 +89,7 @@ func (lim *Limiter) Allow() bool {
 
 	results, err := lim.redisClient.EvalSha(
 		rateTokenizerHash,
-		[]string{lim.key},
+		[]string{key},
 		lim.limit,
 		lim.duration,
 		time.Now().Unix(),
