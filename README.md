@@ -8,4 +8,4 @@ ratelimit
 go get "github.com/shekhar-kamble/ratelimit"
 ```
 ## Example 
- https://gist.github.com/shekhar-kamble/ec775ae8cb4057367a023110d2fb2315.js
+ https://gist.github.com/shekhar-kamble/ec775ae8cb4057367a023110d2fb2315
